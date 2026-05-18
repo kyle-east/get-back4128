@@ -811,6 +811,99 @@ const PHASES = [
 
 // Progressive program — adjusts volume/intensity by week
 function getWorkout(week) {
+  // ===== WEEK 1: HOME / BODYWEIGHT ONLY =====
+  // No equipment. Same 5-day training feel: Lower, Easy Run, Upper, Speed, Full Body + Long Run + Recovery
+  if (week === 1) {
+    return {
+      isDeload: false,
+      phase: 1,
+      days: [
+        {
+          title: 'Lower Bodyweight + MDL Prep',
+          type: 'strength',
+          tag: 'STRENGTH',
+          exercises: [
+            { name: 'Bodyweight Squat', detail: 'Slow tempo (3s down)', rx: '4×20' },
+            { name: 'Bulgarian Split Squat', detail: 'Foot on chair/couch', rx: '3×12/leg' },
+            { name: 'Glute Bridge (single-leg)', detail: 'Posterior chain — MDL prep', rx: '3×15/leg' },
+            { name: 'Jump Squat', detail: 'Power — SPT carryover', rx: '4×8 explosive' },
+            { name: 'Reverse Lunge', detail: 'Unilateral', rx: '3×10/leg' },
+            { name: 'Wall Sit', detail: 'Isometric finisher', rx: '3×45s' },
+            { name: 'Plank', detail: 'Core stability', rx: '3×60s' }
+          ]
+        },
+        {
+          title: 'Easy Run',
+          type: 'run',
+          tag: 'AEROBIC',
+          exercises: [
+            { name: 'Zone 2 Run', detail: 'Conversational pace', rx: '3-4 mi @ 10:30-11:30/mi' },
+            { name: 'Strides', detail: 'After run', rx: '4×100m @ 5K effort' },
+            { name: 'Mobility', detail: 'Hip flexors, calves', rx: '10 min' }
+          ]
+        },
+        {
+          title: 'Upper Bodyweight + HRP',
+          type: 'strength',
+          tag: 'STRENGTH',
+          exercises: [
+            { name: 'Hand-Release Pushup', detail: 'ACFT HRP event', rx: '5×12' },
+            { name: 'Pike Pushup', detail: 'Shoulder/overhead push', rx: '4×8' },
+            { name: 'Inverted Row (under table)', detail: 'Sturdy table, body under, pull up', rx: '4×10' },
+            { name: 'Diamond Pushup', detail: 'Tricep emphasis', rx: '3×10' },
+            { name: 'Superman Hold', detail: 'Upper back / posterior', rx: '3×30s' },
+            { name: 'Chair Dip', detail: 'Tricep, feet on floor', rx: '3×12' },
+            { name: 'Hollow Body Hold', detail: 'Anterior core', rx: '3×30s' }
+          ]
+        },
+        {
+          title: 'Speed Intervals',
+          type: 'run',
+          tag: 'SPEED',
+          exercises: [
+            { name: 'Warmup', detail: 'Easy pace + drills', rx: '1 mi + 4 strides' },
+            { name: 'Intervals', detail: 'VO2/threshold', rx: '6×400m @ 8:30/mi · 90s rest' },
+            { name: 'Cooldown', detail: 'Easy', rx: '1 mi + stretch' }
+          ]
+        },
+        {
+          title: 'Full Body Circuit + SDC Prep',
+          type: 'strength',
+          tag: 'HYBRID',
+          exercises: [
+            { name: 'Burpees', detail: 'Full-body conditioning', rx: '5×10' },
+            { name: 'Mountain Climbers', detail: 'SDC carryover — fast feet', rx: '4×40 total' },
+            { name: 'Walking Lunge', detail: 'Loaded carry sub — across room', rx: '4×20 steps' },
+            { name: 'Pushup → Shoulder Tap', detail: 'Stability + push', rx: '3×12' },
+            { name: 'Broad Jump', detail: 'Power — SPT carryover', rx: '4×5' },
+            { name: 'Bear Crawl', detail: 'Forward/back across room', rx: '3×40m' },
+            { name: '1-Mile Easy Run', detail: 'Finish on easy effort', rx: '1 mi easy' }
+          ]
+        },
+        {
+          title: 'Long Run',
+          type: 'run',
+          tag: 'ENDURANCE',
+          exercises: [
+            { name: 'Long Slow Distance', detail: 'Aerobic capacity', rx: '6.0 mi @ 11:00-11:30/mi' },
+            { name: 'Fuel', detail: '30-50g carbs pre-run', rx: 'pre-run' },
+            { name: 'Recovery Protein', detail: '40g within 1hr', rx: 'post-run' }
+          ]
+        },
+        {
+          title: 'Active Recovery',
+          type: 'rest',
+          tag: 'REST',
+          exercises: [
+            { name: 'Walk', detail: 'Easy movement', rx: '30 min' },
+            { name: 'Mobility Flow', detail: 'Full body', rx: '15-20 min' },
+            { name: 'Sleep audit', detail: 'Aim 7-9 hrs', rx: 'priority' }
+          ]
+        }
+      ]
+    };
+  }
+
   const isDeload = (week === 4 || week === 8);
   const phase = week <= 4 ? 1 : week <= 8 ? 2 : 3;
 
@@ -1407,6 +1500,23 @@ function renderAll() {
 // ============ INIT ============
 (async () => {
   await loadState();
+
+  // One-time reset: wipe progress so today (May 18, 2026) is Day 1 of Week 1
+  try {
+    const flag = await window.storage.get('reset_v2_20260518');
+    if (!flag) {
+      state.workouts = {};
+      state.history = {};
+      state.macros = { date: todayKey(), cal: 0, pro: 0, carb: 0, fat: 0 };
+      state.currentWeek = 1;
+      state.currentPhase = 0;
+      await saveWorkouts();
+      await saveHistory();
+      await saveMacros();
+      await window.storage.set('reset_v2_20260518', 'done');
+    }
+  } catch(e) {}
+
   renderAll();
   bindMacros();
 })();
